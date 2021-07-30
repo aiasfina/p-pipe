@@ -1,4 +1,4 @@
-export default function pPipe(...functions) {
+function pPipe(...functions) {
   if (functions.length === 0) {
     throw new Error('Expected at least one argument');
   }
@@ -27,3 +27,5 @@ export default function pPipe(...functions) {
 
   return exec;
 }
+
+module.exports = pPipe;
