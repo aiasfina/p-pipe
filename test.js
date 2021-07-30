@@ -6,6 +6,13 @@ const addUnicorn = async string => `${string} Unicorn`;
 const addRainbow = string => Promise.resolve(`${string} Rainbow`);
 const addNonPromise = string => `${string} Foo`;
 const fetchString = () => 'without input';
+async function addContextValue() {
+	return `${this.foo} bar`;
+}
+
+async function addContextValueNextStep(string) {
+	return `${string} ${this.baz}`;
+}
 
 test('main', async t => {
 	const single = pPipe(addUnicorn);
@@ -73,4 +80,13 @@ test('calls function without input', async t => {
 	const withoutInput = pPipe(fetchString, addUnicorn);
 
 	t.is(await withoutInput(), 'without input Unicorn');
+});
+
+test('calls function with context', async t => {
+	const withContext = await pPipe(
+		addContextValue,
+		addContextValueNextStep
+	).context({foo: 'foo', baz: 'baz'})();
+
+	t.is(withContext, 'foo bar baz');
 });
