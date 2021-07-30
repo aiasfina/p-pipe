@@ -7,86 +7,86 @@ const addRainbow = string => Promise.resolve(`${string} Rainbow`);
 const addNonPromise = string => `${string} Foo`;
 const fetchString = () => 'without input';
 async function addContextValue() {
-	return `${this.foo} bar`;
+  return `${this.foo} bar`;
 }
 
 async function addContextValueNextStep(string) {
-	return `${string} ${this.baz}`;
+  return `${string} ${this.baz}`;
 }
 
 test('main', async t => {
-	const single = pPipe(addUnicorn);
-	t.is(await single('❤️'), '❤️ Unicorn');
+  const single = pPipe(addUnicorn);
+  t.is(await single('❤️'), '❤️ Unicorn');
 
-	const multi = pPipe(addUnicorn, addRainbow);
-	t.is(await multi('❤️'), '❤️ Unicorn Rainbow');
+  const multi = pPipe(addUnicorn, addRainbow);
+  t.is(await multi('❤️'), '❤️ Unicorn Rainbow');
 
-	const mixed = pPipe(addNonPromise, addUnicorn, addRainbow);
-	t.is(await mixed('❤️'), '❤️ Foo Unicorn Rainbow');
+  const mixed = pPipe(addNonPromise, addUnicorn, addRainbow);
+  t.is(await mixed('❤️'), '❤️ Foo Unicorn Rainbow');
 
-	const array = pPipe(...[addUnicorn, addRainbow]);
-	t.is(await array('❤️'), '❤️ Unicorn Rainbow');
+  const array = pPipe(...[addUnicorn, addRainbow]);
+  t.is(await array('❤️'), '❤️ Unicorn Rainbow');
 });
 
 test('is lazy', async t => {
-	const spy = sinon.spy();
-	const fn = pPipe(spy);
+  const spy = sinon.spy();
+  const fn = pPipe(spy);
 
-	t.false(spy.called);
+  t.false(spy.called);
 
-	await fn('❤️');
+  await fn('❤️');
 
-	t.true(spy.called);
+  t.true(spy.called);
 });
 
 test('throws', async t => {
-	const whoops = async () => {
-		throw new Error('💔');
-	};
+  const whoops = async () => {
+    throw new Error('💔');
+  };
 
-	const fn = async () => pPipe(whoops)('🧐');
-	await t.throwsAsync(fn, {message: '💔'});
+  const fn = async () => pPipe(whoops)('🧐');
+  await t.throwsAsync(fn, {message: '💔'});
 });
 
 test('immediately stops on error', async t => {
-	const one = sinon.spy();
-	const two = sinon.stub().throws('😭');
-	const three = sinon.spy();
+  const one = sinon.spy();
+  const two = sinon.stub().throws('😭');
+  const three = sinon.spy();
 
-	const fn = async () => pPipe(one, two, three)('🧐');
-	await t.throwsAsync(fn);
+  const fn = async () => pPipe(one, two, three)('🧐');
+  await t.throwsAsync(fn);
 
-	t.true(one.called);
-	t.true(two.called);
-	t.false(three.called);
+  t.true(one.called);
+  t.true(two.called);
+  t.false(three.called);
 });
 
 test('requires at least one input', t => {
-	t.throws(() => {
-		pPipe();
-	}, {
-		message: 'Expected at least one argument'
-	});
+  t.throws(() => {
+    pPipe();
+  }, {
+    message: 'Expected at least one argument'
+  });
 });
 
 test('reuse pipe', async t => {
-	const task = pPipe(addUnicorn);
+  const task = pPipe(addUnicorn);
 
-	t.is(await task('❤️'), '❤️ Unicorn');
-	t.is(await task('❤️'), '❤️ Unicorn');
+  t.is(await task('❤️'), '❤️ Unicorn');
+  t.is(await task('❤️'), '❤️ Unicorn');
 });
 
 test('calls function without input', async t => {
-	const withoutInput = pPipe(fetchString, addUnicorn);
+  const withoutInput = pPipe(fetchString, addUnicorn);
 
-	t.is(await withoutInput(), 'without input Unicorn');
+  t.is(await withoutInput(), 'without input Unicorn');
 });
 
 test('calls function with context', async t => {
-	const withContext = await pPipe(
-		addContextValue,
-		addContextValueNextStep
-	).context({foo: 'foo', baz: 'baz'})();
+  const withContext = await pPipe(
+    addContextValue,
+    addContextValueNextStep
+    ).context({foo: 'foo', baz: 'baz'})();
 
-	t.is(withContext, 'foo bar baz');
-});
+    t.is(withContext, 'foo bar baz');
+  });
